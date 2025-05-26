@@ -7,6 +7,9 @@
       <sourceFolder url="file://$MODULE_DIR$/2. Repetitions" isTestSource="false" />
       <sourceFolder url="file://$MODULE_DIR$/3. Higher Order Functions" isTestSource="false" />
       <sourceFolder url="file://$MODULE_DIR$/4. Paralellism" isTestSource="false" />
+      <sourceFolder url="file://$MODULE_DIR$/5. Automata" isTestSource="false" />
+      <sourceFolder url="file://$MODULE_DIR$/6. Regular Expressions" isTestSource="false" />
+      <sourceFolder url="file://$MODULE_DIR$/7. Context Free Grammars" isTestSource="false" />
     </content>
     <orderEntry type="inheritedJdk" />
     <orderEntry type="sourceFolder" forTests="false" />
