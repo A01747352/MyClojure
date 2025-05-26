@@ -6,6 +6,7 @@
       <sourceFolder url="file://$MODULE_DIR$/1. Introduction" isTestSource="false" />
       <sourceFolder url="file://$MODULE_DIR$/2. Repetitions" isTestSource="false" />
       <sourceFolder url="file://$MODULE_DIR$/3. Higher Order Functions" isTestSource="false" />
+      <sourceFolder url="file://$MODULE_DIR$/4. Paralellism" isTestSource="false" />
     </content>
     <orderEntry type="inheritedJdk" />
     <orderEntry type="sourceFolder" forTests="false" />
