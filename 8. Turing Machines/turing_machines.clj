@@ -20,8 +20,6 @@
   (.write writer (str self)))
 
 (defn make-tape
-  "Creates a Tape object from a string or from left, head, and right components.
-   Trims leading and trailing underscores for a clean representation."
   ([s]
    (let [result (drop-while #(= % \_) s)]
      (make-tape ""
@@ -35,13 +33,10 @@
              (apply str new-right)))))
 
 (defn write-tape
-  "Writes a symbol to the current head position of the tape."
   [{:keys [left right]} value]
   (make-tape left value right))
 
 (defn shift-head
-  "Shifts the tape head left or right, updating the tape structure accordingly.
-   Throws an exception if the direction is invalid."
   [{:keys [left head right]} direction]
   (case direction
     :left (make-tape (or (butlast left) ())
@@ -53,8 +48,6 @@
     (throw (ex-info (str "Bad direction: " direction) {}))))
 
 (defn accepts
-  "Simulates a Turing Machine on the given input.
-   Returns the final tape as string if input is accepted, otherwise nil."
   [{:keys [initial-state accept-states transitions]} input]
   (loop [tape (make-tape input)
          current-state initial-state]
@@ -66,6 +59,7 @@
                new-state)
         nil))))
 
+;----------------------------------------------------------
 ; Problema 1
 (def tm-1 (->TM :q0
                 #{:q2}
@@ -87,6 +81,7 @@
   (is (nil? (accepts tm-1 "aaaaaaa")))
   (is (nil? (accepts tm-1 "aaaaaaaaaaaaaaaaaaaaaaaaa"))))
 
+;----------------------------------------------------------
 ; Problema 2
 (def tm-2 (->TM :q0
                 #{:q3}
@@ -111,6 +106,7 @@
   (is (nil? (accepts tm-2 "100000000001")))
   (is (nil? (accepts tm-2 "10011010100101011"))))
 
+;----------------------------------------------------------
 ; Problema 3
 (def tm-3 (->TM :q0
                 #{:q3}
@@ -145,9 +141,131 @@
   (is (= "1000000000000000[0]"
          (accepts tm-3 "1111111111111111"))))
 
+;----------------------------------------------------------
 ; Problema 4
+(def tm-4 (->TM :q0
+                #{:q5}
+                {:q0 {\a [\a :right :q0]
+                      \$ [\$ :right :q0]
+                      \_ [\_ :left :q1]}
+                 :q1 {\a [\_ :left :q2]
+                      \$ [\_ :left :q5]}
+                 :q2 {\a [\a :left :q2]
+                      \$ [\$ :left :q2]
+                      \_ [\_ :right :q3]}
+                 :q3 {\a [\_ :right :q0]
+                      \$ [\_ :right :q4]}
+                 :q4 {\a [\_ :right :q4]
+                      \_ [\_ :right :q5]}}))
 
-6
+(deftest test-problem4
+  (is (= "[_]"
+         (accepts tm-4 "$")))
+  (is (= "[_]"
+         (accepts tm-4 "a$a")))
+  (is (= "[a]"
+         (accepts tm-4 "aa$a")))
+  (is (= "aa[a]"
+         (accepts tm-4 "aaaaa$aa")))
+  (is (= "[_]"
+         (accepts tm-4 "aaaaa$aaaaaaaa")))
+  (is (= "aa[a]"
+         (accepts tm-4 "aaaaaaaa$aaaaa")))
+  (is (= "[_]"
+         (accepts tm-4 "$aaaaaaaaaaaaa")))
+  (is (= "aaaaaaaaaaaa[a]"
+         (accepts tm-4 "aaaaaaaaaaaaa$"))))
 
+;----------------------------------------------------------
+; Problema 5
+(def tm-5
+  (->TM :q0
+        #{:q5}
+        {
+         :q0 {\a [\X :right :q1]
+              \X [\X :right :q0]
+              \Y [\Y :right :q4]
+              \Z [\Z :right :q4]
+              \_ [\_ :right :q4]}
+
+         :q1 {\a [\a :right :q1]
+              \Y [\Y :right :q1]
+              \b [\Y :right :q2]
+              \Z [\Z :right :q1]}
+
+         :q2 {\b [\b :right :q2]
+              \Z [\Z :right :q2]
+              \c [\Z :left  :q3]}
+
+         :q3 {\a [\a :left  :q3]
+              \b [\b :left  :q3]
+              \c [\c :left  :q3]
+              \X [\X :left  :q3]
+              \Y [\Y :left  :q3]
+              \Z [\Z :left  :q3]
+              \_ [\_ :right :q0]}
+
+         :q4 {\Y [\Y :right :q4]
+              \Z [\Z :right :q4]
+              \_ [\_ :right :q5]}}))
+
+(deftest test-problem5
+  (is (accepts tm-5 ""))
+  (is (accepts tm-5 "abc"))
+  (is (accepts tm-5 "aaabbbccc"))
+  (is (accepts tm-5 "aaaaaaaaaabbbbbbbbbbcccccccccc"))
+  (is (nil? (accepts tm-5 "a")))
+  (is (nil? (accepts tm-5 "aabbc")))
+  (is (nil? (accepts tm-5 "aabaca")))
+  (is (nil? (accepts tm-5 "cccaaabbb")))
+  (is (nil? (accepts tm-5 "aaaaaccccc")))
+  (is (nil? (accepts tm-5 "abcabcabcabc")))
+  (is (nil? (accepts tm-5 "aaaaabbbbbcccccc")))
+  (is (nil? (accepts tm-5 "aaaaaaaaaabbbbbbbbbcccccccccc"))))
+
+;----------------------------------------------------------
+; Problema 6
+(def tm-6
+  (->TM :q0
+        #{:q5}
+        {
+         :q0 {\0 [\X :right :q1]
+              \1 [\Y :right :q2]
+              \X [\X :right :q0]
+              \Y [\Y :right :q0]
+              \_ [\_ :right :q5]}
+
+         :q1 {\1 [\Y :left  :q3]
+              \0 [\0 :right :q1]
+              \X [\X :right :q1]
+              \Y [\Y :right :q1]}
+
+         :q2 {\0 [\X :left  :q3]
+              \1 [\1 :right :q2]
+              \X [\X :right :q2]
+              \Y [\Y :right :q2]}
+
+         :q3 {\0 [\0 :left  :q3]
+              \1 [\1 :left  :q3]
+              \X [\X :left  :q3]
+              \Y [\Y :left  :q3]
+              \_ [\_ :right :q0]}}))
+
+(deftest test-problem6
+  (is (accepts tm-6 ""))
+  (is (accepts tm-6 "01"))
+  (is (accepts tm-6 "10"))
+  (is (accepts tm-6 "11000101"))
+  (is (accepts tm-6 "1010011010"))
+  (is (accepts tm-6 "1010101010101010"))
+  (is (accepts tm-6 "1111111100000000"))
+  (is (accepts tm-6 "00000111111111100000"))
+  (is (nil? (accepts tm-6 "11")))
+  (is (nil? (accepts tm-6 "01010")))
+  (is (nil? (accepts tm-6 "11111111000000001")))
+  (is (nil? (accepts tm-6 "10101111001101110101")))
+  (is (nil? (accepts tm-6 "000000000000000000000")))
+  (is (nil? (accepts tm-6 "11111111110111111111111"))))
+
+;----------------------------------------------------------
 (run-tests)
-
