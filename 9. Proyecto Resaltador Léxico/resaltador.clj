@@ -26,7 +26,7 @@
   {"(" :parIzq, ")" :parDer, ":" :dosPuntos, "," :coma, ";" :puntoComa,
    "+" :suma, "-" :resta, "*" :multi, "/" :div, "^" :potencia,
    "=" :igual, "<>" :diferente, "<=" :menorIgual, ">=" :mayorIgual,
-   "<" :menor, ">" :mayor, "." :punto})
+   "<" :menor, ">" :mayor})
 
 (defn conflicto-html [text]
   (-> text
@@ -37,15 +37,16 @@
 (def token-regex
   (re-pattern
     (str "(?x)
-      (\\s+)                                 # Espacios
-      |(REM .*?$)                              # Comentarios
-      |(\"[^\"]*\")                            # Cadenas
-      |\\b\\d+(\\.\\d+)?([eE][-+]?\\d+)?\\b    # Números (int, float, científico)
-      |\\b(" (str/join "|" palabras-reservadas) ")\\b # Palabras clave
-      |\\b[A-Z]{1,2}\\d?\\$?\\b                # Variables
-      |\\b(" (str/join "|" funciones) ")\\b    # Funciones
-      |(<>|<=|>=|[=<>:+\\-*/^(),;.])            # Símbolos
-      |([^\\s])                                # Token inválido
+      (\\s+)                                              # Espacios
+      |(REM .*?$)                                         # Comentarios
+      |(\"[^\"]*\")                                       # Cadenas
+      |(-?(?:\\d+(?:\\.\\d+)?|\\.\\d+)(?:[eE][+-]?\\d+)?)|([a-zA-Z][a-zA-Z0-9]*\\$?)  # Números
+      |\\b(" (str/join "|" palabras-reservadas) ")\\b     # Palabras clave
+      |\\b[A-Z]{1,2}\\d?\\$?\\b                           # Variables
+      |\\b(" (str/join "|" funciones) ")\\b               # Funciones
+      |(<>|<=|>=|[=<>:+\\-*/^(),;])                       # Símbolos
+      |(\\.)                                              # Punto solo (inválido)
+      |([^\\s])                                           # Inválido
     ")))
 
 (defn clasifica-token [token]
@@ -54,10 +55,11 @@
     (re-matches #"^REM\s+.*" token) [:comentario token]
     (= token "REM") [:reservada token]
     (re-matches #"^\"[^\"]*\"$" token) [:cadena token]
-    (re-matches #"^\d+(\.\d+)?([eE][-+]?\d+)?$" token) [:numero token]
+    (re-matches #"^-?(?:\d+(?:\.\d+)?|\.\d+)(?:[eE][+-]?\d+)?$" token) [:numero token]
     (palabras-reservadas token) [:reservada token]
     (re-matches #"^[A-Z]{1,2}\d?\$?$" token) [:variable token]
     (funciones token) [:funcion token]
+    (= token ".") [:invalido token]
     (simbolos token) [(get simbolos token) token]
     :else [:invalido token]))
 
@@ -68,7 +70,6 @@
         (let [token (first (remove nil? grupos))]
           (if (and (str/starts-with? token "REM")
                    (not= token "REM"))
-            ;; Si el token empieza con REM pero es más largo, separamos
             [[:reservada "REM"]
              [:comentario (subs token 3)]]
             [(clasifica-token token)])))
@@ -98,13 +99,13 @@
                         span.numero { color: cyan; }
                         span.cadena { color: gold; }
                         span.comentario { color: gray; font-style: italic; }
-                        span.variable,  span.punto { color: lightgreen; }
+                        span.variable { color: lightgreen; }
                         span.reservada { color: deepskyblue; font-weight: bold; }
                         span.funcion { color: violet; }
                         span.invalido { color: red; background: black; }
-                        span.par-izq, span.par-der, span.dos-puntos, span.coma, span.punto-coma,
+                        span.parIzq, span.parDer, span.dosPuntos, span.coma, span.puntoComa,
                         span.suma, span.resta, span.multi, span.div, span.potencia,
-                        span.igual, span.diferente, span.menor, span.menor-igual, span.mayor, span.mayor-igual { color: orange; }
+                        span.igual, span.diferente, span.menor, span.menorIgual, span.mayor, span.mayorIgual { color: orange; }
                         </style>
                       </head>
                       <body>
